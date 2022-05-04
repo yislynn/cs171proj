@@ -15,6 +15,9 @@
 from AI import AI
 from Action import Action
 
+global board
+global currX
+global currY
 
 class MyAI( AI ):
 
@@ -23,7 +26,12 @@ class MyAI( AI ):
 		########################################################################
 		#							YOUR CODE BEGINS						   #
 		########################################################################
-		pass
+		self.__rows = rowDimension
+		self.__cols = colDimension
+		self.__totalMines = totalMines
+		self.__startX = startX
+		self.__startY = startY
+		self.__endAt = (self.__rows * self.__cols) - self.__totalMines
 		########################################################################
 		#							YOUR CODE ENDS							   #
 		########################################################################
