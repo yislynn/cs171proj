@@ -77,15 +77,15 @@ class MyAI(AI):
         # actions
         # check if there are any safe tiles (-3)
         # pick one of the safe tiles to do
-        safe = getSafe() # get a safe tile to process
+        safe = self.getSafe() # get a safe tile to process
         if len(safe) != 0: # if there exists at least one safe tile, uncover
-            return Action(Action.UNCOVER, safe[0][0], safe[0][1])
+            return Action(AI.Action.UNCOVER, safe[0][0], safe[0][1])
         else:
             # no known safe tiles exist
-            idk = getUncertain() # get unknown tile to process
+            idk = self.getUncertain() # get unknown tile to process
             if len(idk) != 0: # if there exists at least one unknown tile
                 rand = random.choice(idk) # randomly choose a tile to uncover
-                return Action(Action.UNCOVER, rand[0], rand[1])
+                return Action(AI.Action.UNCOVER, rand[0], rand[1])
             else: # there are no unknown tiles = all tiles are uncovered = game is won = leave
                 return Action(AI.Action.LEAVE)
 
