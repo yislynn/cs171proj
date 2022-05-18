@@ -11,11 +11,16 @@
 #
 #				- DO NOT MAKE CHANGES TO THIS FILE.
 # ==============================CS-199==================================
+from operator import add
 import random
+#from sys import set_coroutine_origin_tracking_depth
 
 from AI import AI
 from Action import Action
 
+COVERED = -1
+FLAGGED = -2
+SAFE = -3
 
 class MyAI(AI):
 
@@ -30,12 +35,13 @@ class MyAI(AI):
         self.__currX = startX
         self.__currY = startY
         self.__numCovered = (self.__rows * self.__cols) - self.__totalMines
+        self.__frontier = [(startX, startY)]
         # int label, negative = covered, 0-8 = label (uncovered)
         
         # -1 means covered
         # -2 means flagged
         # -3 means safe
-        self.__board = [[-1 for c in range(colDimension)] for r in range(rowDimension)]
+        self.__board = [[COVERED for c in range(colDimension)] for r in range(rowDimension)]
 
     ########################################################################
     #							YOUR CODE ENDS							   #
@@ -48,6 +54,9 @@ class MyAI(AI):
         ########################################################################
         # update board
         self.__board[self.__currX][self.__currY] = number
+        # update frontier
+        if not self.__frontier.__contains__((self.__currX, self.__currY)):
+            self.__frontier.append((self.__currX, self.__currY))
         # check if we're done
         # if number of mines is M, and M mines have been identified (on board), 
         # all other covered tiles are safe. (may need to be implemented if this skip causes issues)
@@ -55,23 +64,23 @@ class MyAI(AI):
             return Action(AI.Action.LEAVE)
         # figure out UNCOVER(X,Y)
         neighbors = self.getNeighbors(self.__currX, self.__currY)
-        
-        # todo: try simple rule of thumb
-        # uncover all neighbors if 0
-        
         # logic rules
         # 1. if tile = number N and has N flagged (-2) neighbors, all uncertain (-1) neighbors are safe; 
         # change to "safe" on board (-3)
         # 2. if tile = number N and has N uncertain (-1) neighbors, all those neighbors are mines (-2)
-        uncertain = list(filter(lambda ne: (self.__board[ne[0]][ne[1]] == -1), neighbors))
-        flagged = list(filter(lambda ne: (self.__board[ne[0]][ne[1]] == -2), neighbors))
+        uncertain = list(filter(lambda ne: (self.__board[ne[0]][ne[1]] == COVERED), neighbors))
+        flagged = list(filter(lambda ne: (self.__board[ne[0]][ne[1]] == FLAGGED), neighbors))
 
         if (number == len(flagged)):
             for x, y in uncertain:
-                self.__board[x][y] = -3
+                self.__board[x][y] = SAFE
+            # all neighbors either flagged or uncovered = tile no longer in frontier
+            self.__frontier.remove((self.__currX, self.__currY)) 
         elif (number == len(uncertain)):
             for x, y in uncertain:
-                self.__board[x][y] = -2
+                self.__board[x][y] = FLAGGED
+            # all neighbors either flagged or uncovered = tile no longer in frontier
+            self.__frontier.remove((self.__currX, self.__currY)) 
 
         # actions
         # check if there are any safe tiles (-3)
@@ -85,8 +94,19 @@ class MyAI(AI):
             return Action(AI.Action.UNCOVER, safe[0][0], safe[0][1])
         else:
             # no known safe tiles exist
+            # uncover neighbor from smallest label from frontier
+            self.__frontier.sort(key = lambda x: self.__board[x[0]][x[1]])            
             idk = self.getUncertain() # get unknown tile to process
-            if len(idk) != 0: # if there exists at least one unknown tile
+            if len(self.__frontier) != 0:
+                front = self.__frontier[0]
+                front = self.getNeighbors(front[0], front[1])
+                front = list(filter(lambda tile: self.__board[tile[0]][tile[1]] == COVERED, front))
+                rand = random.choice(front)
+                self.__currX = rand[0]
+                self.__currY = rand[1]
+                return Action(AI.Action.UNCOVER, rand[0], rand[1])
+
+            elif len(idk) != 0: # if there exists at least one unknown tile
                 #print("Choosing Uncertain Tile")
                 rand = random.choice(idk) # randomly choose a tile to uncover
                 self.__currX = rand[0]
@@ -135,7 +155,7 @@ class MyAI(AI):
         safe = []
         for i in range(self.__rows):
             for j in range(self.__cols):
-                if self.__board[i][j] == -3:
+                if self.__board[i][j] == SAFE:
                     safe.append((i, j))
         return safe
     
@@ -143,6 +163,7 @@ class MyAI(AI):
         idk = []
         for i in range(self.__rows):
             for j in range(self.__cols):
-                if self.__board[i][j] == -1:
+                if self.__board[i][j] == COVERED:
                     idk.append((i, j))
         return idk
+     
