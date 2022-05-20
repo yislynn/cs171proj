@@ -30,7 +30,7 @@ class MyAI(AI):
             self.elabel = -1
         
         def __str__(self):
-            return "L:%i/S:%b/F:%b" % (self.label, self.safe, self.flag)
+            return f"L:{self.label}/EL:{self.elabel}/S:{self.safe}/F:{self.flag}"
 
 
     def __init__(self, rowDimension, colDimension, totalMines, startX, startY):
@@ -60,10 +60,9 @@ class MyAI(AI):
         ########################################################################
         # update board
         if(number >= 0): self.__numCovered = self.__numCovered - 1
-        tile = self.__Tile()
+        tile = self.__board[self.__currX][self.__currY]
         tile.label = number
         tile.covered = False
-        self.__board[self.__currX][self.__currY] = tile
 
         # update frontier
         if not self.__frontier.__contains__((self.__currX, self.__currY)):
@@ -115,8 +114,6 @@ class MyAI(AI):
         else:
             # no known safe tiles exist
             print("no safe tiles left!", len(safe), safe)
-            # uncover rand neighbor of frontier
-            #self.__frontier.sort(key = lambda x: self.__board[x[0]][x[1]])
             idk = self.get_uncertain() # get unknown tile to process
             if len(idk) != 0: # if there exists at least one unknown tile
                 print("taking random tile")
@@ -138,12 +135,7 @@ class MyAI(AI):
         #     uncovered = list(filter(lambda ne: (self.__board[ne[0]][ne[1]] == -1), neighbors))
         #     rand_uncover = random.choice(uncovered)
         #     return Action(Action.UNCOVER, rand_uncover[0], rand_uncover[1])
-        
 
-        # if doesn't work, use better logic
-        # if doesn't work, use EVEN BETTER logic
-
-        # if uncover, decrement numCovered
     ########################################################################
     #							YOUR CODE ENDS							   #
     ########################################################################
@@ -190,5 +182,14 @@ class MyAI(AI):
         return
 
     def model_check(self):
-        
+        # get U/C in frontier
+        uncovered = self.__frontier.copy()
+        covered = []
+        for f in uncovered:
+            covered.append(self.get_covered_neighbors(f[0],f[1]))
+
+        for c in covered:
+            # TODO: generate assignments to C
+            # TODO: given assignment to C, check if elabel of each tile in U is satisfied
+            pass
         return
