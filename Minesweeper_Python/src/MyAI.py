@@ -88,6 +88,7 @@ class MyAI(AI):
                 #self.__board[safe[0][0]][safe[0][1]] = 0
                 self.__currX = safe[0][0]
                 self.__currY = safe[0][1]
+                self.__numCovered -= 1 # decrement covered count
                 return Action(AI.Action.UNCOVER, safe[0][0], safe[0][1])
             else:
                 # re evaluate to find safe tiles
@@ -108,6 +109,7 @@ class MyAI(AI):
                 if len(safe) != 0: # if there exists at least one safe tile, uncover
                     self.__currX = safe[0][0]
                     self.__currY = safe[0][1]
+                    self.__numCovered -= 1 # decrement covered count
                     return Action(AI.Action.UNCOVER, safe[0][0], safe[0][1])
                         
                 else:
@@ -118,6 +120,7 @@ class MyAI(AI):
                         rand = random.choice(idk) # randomly choose a tile to uncover
                         self.__currX = rand[0]
                         self.__currY = rand[1]
+                        self.__numCovered -= 1 # decrement covered count
                         return Action(AI.Action.UNCOVER, rand[0], rand[1])
                     else: # there are no unknown tiles = all tiles are uncovered = game is won = leave
                         return Action(AI.Action.LEAVE)
