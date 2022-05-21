@@ -149,10 +149,10 @@ class MyAI(AI):
                             neighbors = self.getNeighbors(i, j)
                             uncertain = list(filter(lambda ne: (self.__board[ne[0]][ne[1]].covered and not self.__board[ne[0]][ne[1]].flag), neighbors))
                             flagged = list(filter(lambda ne: (self.__board[ne[0]][ne[1]].flag or self.__board[i][j].mine), neighbors))
-                            if (self.__board[i][j].label == len(flagged)):
+                            if (self.__board[i][j].label == len(flagged)): # all mines have been flagged
                                 for x, y in uncertain:
                                     self.__board[x][y].safe = True
-                            elif (self.__board[i][j].label == len(uncertain)):
+                            elif (self.__board[i][j].label == len(uncertain)): # all uncertain tiles in the area are mines
                                 for x, y in uncertain:
                                     self.__board[x][y].mine = True
                 # get any newly generated safe tiles, if possible
@@ -162,7 +162,8 @@ class MyAI(AI):
                     self.__currX = safe[0][0]
                     self.__currY = safe[0][1]
                     return Action(AI.Action.UNCOVER, safe[0][0], safe[0][1]) 
-                else: # the first uncertian choice
+                else: # the first uncertian choice, causes the most issues because it's randomly chosen
+
                     # no known safe tiles exist
                     idk = self.getUncertain() # get unknown tile to process
                     if len(idk) != 0: # if there exists at least one unknown tile
@@ -208,7 +209,6 @@ class MyAI(AI):
             # check if in bounds
             if n[1] < self.__cols and n[1] >= 0 and n[0] < self.__rows and n[0] >= 0:
                 ne.append(n)
-            # check if covered
         return ne
 
     def getSafe(self):
@@ -237,7 +237,7 @@ class MyAI(AI):
         flags = []
         for i in range(self.__rows):
             for j in range(self.__cols):
-                if self.__board[i][j].flag:
+                if self.__board[i][j].flag or self.__board[i][j].mine:
                     flags.append((i, j))
         return flags
 
@@ -260,10 +260,10 @@ class MyAI(AI):
         for n in self.get_uncovered_neighbors(x, y):
             tile = self.__board[n[0]][n[1]]
             tile.elabel = tile.label - len(self.get_flagged_neighbors(x, y))
-        for i in range(self.__rows):
-            for j in range(self.__cols):
-                print(self.__board[i][j].elabel, end=" ")
-            print()
+        # for i in range(self.__rows):
+        #     for j in range(self.__cols):
+        #         print(self.__board[i][j].elabel, end=" ")
+        #     print()
         # return
 
     def model_check(self): 
