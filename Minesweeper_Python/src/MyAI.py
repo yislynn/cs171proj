@@ -237,7 +237,7 @@ class MyAI(AI):
         flags = []
         for i in range(self.__rows):
             for j in range(self.__cols):
-                if self.__board[i][j].flag or self.__board[i][j].mine:
+                if self.__board[i][j].flag: # adding mine borks it for some reason :/
                     flags.append((i, j))
         return flags
 
