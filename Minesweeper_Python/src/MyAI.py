@@ -103,7 +103,7 @@ class MyAI(AI):
             # do not decrement numCovered here; causes the game to quit early in some cases
             tile.label = number   # self.__board[self.__currX][self.__currY] = number; set the tile's label
             self.update_elabel(self.__currX, self.__currY)  # hrm
-            tile.covered = False  # mark tile as uncovered on the board
+            #tile.covered = False  # mark tile as uncovered on the board
         
         self.put_in_frontier(tile)
 
@@ -149,17 +149,19 @@ class MyAI(AI):
                     self.__board[n[0]][n[1]].safe = True
 
         # actions
+        # check and update known mines that havent been flagged on board
         flagged = self.get_flagged()
         if len(flagged) != 0:
             print("Updating flags")
             # check for tiles that are found to have mines; flag on board
+            print(flagged[0][0],flagged[0][1], len(flagged))
             self.__board[flagged[0][0]][flagged[0][1]].flag = True # set flag status to true (has been/will be flagged on board)
             return Action(AI.Action.FLAG, flagged[0][0], flagged[0][1])
         else:
             # check if there are any safe tiles (-3)
             safe = self.get_safe() # get a safe tile to process
             if len(safe) != 0: # if there exists at least one safe tile, uncover
-                print("Choosing a safe tile")
+                print("Choosing a safe tile1")
                 # pick one of the safe tiles to uncover
                 self.__currX = safe[0][0]
                 self.__currY = safe[0][1]
@@ -171,7 +173,6 @@ class MyAI(AI):
                 print("Reevaluating")
                 for i in range(self.__rows):
                     for j in range(self.__cols):
-                        print("in loop")
                         if not self.__board[i][j].covered:
 
                             uncertain = self.get_uncertain_neighbors(i, j)
@@ -194,8 +195,6 @@ class MyAI(AI):
                                     # found mine, update elabel
                                     self.update_mine_elabel(x, y)
                                 self.remove_from_frontier(self.__board[i][j])
-
-                        print("forntier")
                         for f in self.__frontier.pq:
                             if f.elabel == 0:
                                 neighborhood = self.get_uncertain_neighbors(f.x, f.y)
@@ -206,7 +205,7 @@ class MyAI(AI):
                 # get any newly generated safe tiles, if possible
                 safe = self.get_safe() # get a safe tile to process
                 if len(safe) != 0: # if there exists at least one safe tile, uncover
-                    print("Choosing a safe tile")
+                    print("Choosing a safe tile2")
                     self.__currX = safe[0][0]
                     self.__currY = safe[0][1]
                     self.__board[safe[0][0]][safe[0][1]].covered = False
@@ -216,7 +215,7 @@ class MyAI(AI):
                     # no known safe tiles exist
                     print("Iterate thru frontier")
                     # iterate through the frontier to find a move first. 
-                    if len(self.__frontier) != 0:
+                    if self.__frontier.isEmpty(): #len(self.__frontier.p) != 0:
                         for tile in self.__frontier.pq:
                             uncertain = self.get_uncertain_neighbors(f[0], f[1])
                             flagged = self.get_flagged_neighbors(f[0], f[1]) 
@@ -240,7 +239,7 @@ class MyAI(AI):
                     # get any newly generated safe tiles, if possible
                     safe = self.get_safe() # get a safe tile to process
                     if len(safe) != 0: # if there exists at least one safe tile, uncover
-                        print("Choosing a safe tile")
+                        print("Choosing a safe tile3")
                         self.__currX = safe[0][0]
                         self.__currY = safe[0][1]
                         self.__board[safe[0][0]][safe[0][1]].covered = False
@@ -332,7 +331,7 @@ class MyAI(AI):
         """Update the effective label of the neighbors of a mine tile"""
         for n in self.get_uncovered_neighbors(x, y):
             tile = self.__board[n[0]][n[1]]
-            tile.elabel -= 1
+            self.update_elabel(n[0], n[1])
 
     def model_check(self): 
         """I'm leavin this to you since idk what ur goal is"""
