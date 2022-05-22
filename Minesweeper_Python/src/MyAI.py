@@ -15,22 +15,58 @@ import random
 
 from AI import AI
 from Action import Action
+import heapq
+
+class PriorityQueue:
+    def __init__(self):
+        self.pq = []
+
+    def push(self, item):
+        heapq.heappush(self.pq, item)
+
+    def pop(self):
+        return heapq.heappop(self.pq)
+    
+    def remove(self, item):
+        for i in self.pq:
+            if i == item:
+                self.pq.remove(item)
+
+    def isEmpty(self):
+        return len(self.pq) == 0
+
+    def isIn(self, item):
+        for i in self.pq:
+            if i == item:
+               return True
+        return False
 
 
 class MyAI(AI):
 
     class __Tile(): 
         # add tile class to describe board state
-        def __init__(self) -> None:
+        def __init__(self, x, y) -> None:
             self.covered = True
             self.mine = False # has been determined to be a mine
             self.flag = False # has been marked on board
             self.safe = False
             self.label = -1
             self.elabel = -1
+            self.x = x
+            self.y = y
         
         def __str__(self): # f strings only exist in python 3.6; incompatible
             return # f"L:{self.label}/EL:{self.elabel}/S:{self.safe}/F:{self.flag}"
+
+        def __cmp__(self, other): # f strings only exist in python 3.6; incompatible
+            return (self.label > other.label) - (self.label < other.label) # cmp(self.label, other.label)
+
+        def __lt__(self, other): # f strings only exist in python 3.6; incompatible
+            return self.label < other.label
+
+        def __eq__(self, other): # f strings only exist in python 3.6; incompatible
+            return self.label == other.label # cmp(self.label, other.label)
 
     def __init__(self, rowDimension, colDimension, totalMines, startX, startY):
         self.__rows = rowDimension
@@ -40,12 +76,13 @@ class MyAI(AI):
         self.__currY = startY
         self.__numCovered = (self.__rows * self.__cols) - self.__totalMines
         # int label, negative = covered, 0-8 = label (uncovered)
-        
-        # create a frontier to contain the tiles currently operating on (tiles we aren't done with?)
-        self.__frontier = [(startX, startY)]
 
         # create a board of tiles; each will contain tile state information
-        self.__board = [[self.__Tile() for c in range(colDimension)] for r in range(rowDimension)]
+        self.__board = [[self.__Tile(r, c) for c in range(colDimension)] for r in range(rowDimension)]
+
+        # create a frontier to contain the tiles currently operating on (tiles we aren't done with?)
+        self.__frontier = PriorityQueue()
+        self.put_in_frontier(self.__board[self.__currX][self.__currY])
         
         # -1 means covered
         # -2 means flagged
@@ -60,18 +97,15 @@ class MyAI(AI):
     def getAction(self, number: int) -> "Action Object":
         # update board
         print("percept number:", number, "current x/y:", self.__currX, self.__currY)
-        
+        tile = self.__board[self.__currX][self.__currY] # get the current tile from the board
         if number >= 0: # a/n un/flagging was not done (uncovered), set the label of the tile at the board
             print("Updating")
             # do not decrement numCovered here; causes the game to quit early in some cases
-            tile = self.__board[self.__currX][self.__currY] # get the current tile from the board
             tile.label = number   # self.__board[self.__currX][self.__currY] = number; set the tile's label
             self.update_elabel(self.__currX, self.__currY)  # hrm
             tile.covered = False  # mark tile as uncovered on the board
         
-        if (self.__currX, self.__currY) not in self.__frontier: # add current tile to frontier if not already in frontier
-            print("Adding to frontier")
-            self.put_in_frontier(self.__currX, self.__currY)
+        self.put_in_frontier(tile)
 
         # check if we're done
         # if number of mines is M, and M mines have been identified (on board), 
@@ -95,7 +129,7 @@ class MyAI(AI):
                 # mark all other unknown tiles as safe
                 self.__board[x][y].safe = True
             # all neighbors either flagged or uncovered = tile no longer has unknowns = tile not in frontier
-            self.remove_from_frontier(self.__currX, self.__currY)
+            self.remove_from_frontier(tile)
         
         elif (number == len(uncertain)): # the number of unknowns is equal to tile number
             print("All mines")
@@ -105,13 +139,12 @@ class MyAI(AI):
                 # found mine, update elabel
                 self.update_mine_elabel(x, y)
             # all neighbors either flagged or uncovered = tile no longer in frontier
-            self.remove_from_frontier(self.__currX, self.__currY)
+            self.remove_from_frontier(tile)
 
         # iterate frontier; covered unflagged neighbors are safe if elabels are zero
-        for f in self.__frontier:
-            tile = self.__board[f[0]][f[1]]
-            if tile.elabel == 0:
-                neighborhood = self.get_uncertain_neighbors(f[0], f[1])
+        for f in self.__frontier.pq:
+            if f.elabel == 0:
+                neighborhood = self.get_uncertain_neighbors(f.x, f.y)
                 for n in neighborhood:
                     self.__board[n[0]][n[1]].safe = True
 
@@ -151,7 +184,7 @@ class MyAI(AI):
                                     print("uncertain")
                                     self.__board[x][y].safe = True
                                 print("removing")
-                                self.remove_from_frontier(i, j)
+                                self.remove_from_frontier(self.__board[i][j])
                                 print("removed")
 
                             elif (self.__board[i][j].label == len(uncertain)): # all uncertain tiles in the area are mines
@@ -160,13 +193,12 @@ class MyAI(AI):
                                     self.__board[x][y].mine = True
                                     # found mine, update elabel
                                     self.update_mine_elabel(x, y)
-                                self.remove_from_frontier(i, j)
+                                self.remove_from_frontier(self.__board[i][j])
 
                         print("forntier")
-                        for f in self.__frontier:
-                            tile = self.__board[f[0]][f[1]]
-                            if tile.elabel == 0:
-                                neighborhood = self.get_uncertain_neighbors(f[0], f[1])
+                        for f in self.__frontier.pq:
+                            if f.elabel == 0:
+                                neighborhood = self.get_uncertain_neighbors(f.x, f.y)
                                 for n in neighborhood:
                                     self.__board[n[0]][n[1]].safe = True
 
@@ -185,25 +217,23 @@ class MyAI(AI):
                     print("Iterate thru frontier")
                     # iterate through the frontier to find a move first. 
                     if len(self.__frontier) != 0:
-                        for f in self.__frontier:
-                            tile = self.__board[f[0]][f[1]]
+                        for tile in self.__frontier.pq:
                             uncertain = self.get_uncertain_neighbors(f[0], f[1])
                             flagged = self.get_flagged_neighbors(f[0], f[1]) 
                             if (self.__board[f[0]][f[1]].label == len(flagged)): # all mines have been flagged
                                 for x, y in uncertain:
                                     self.__board[x][y].safe = True
-                                self.remove_from_frontier(f[0], f[1])
+                                self.remove_from_frontier(self.__board[f[0]][f[1]])
                             elif (self.__board[f[0]][f[1]].label == len(uncertain)): # all uncertain tiles in the area are mines
                                 for x, y in uncertain:
                                     self.__board[x][y].mine = True
                                     # found mine, update elabel
                                     self.update_mine_elabel(x, y)
-                                self.remove_from_frontier(f[0], f[1])
+                                self.remove_from_frontier(self.__board[f[0]][f[1]])
 
-                        for f in self.__frontier:
-                            tile = self.__board[f[0]][f[1]]
-                            if tile.elabel == 0:
-                                neighborhood = self.get_uncertain_neighbors(f[0], f[1])
+                        for f in self.__frontier.pq:
+                            if f.elabel == 0:
+                                neighborhood = self.get_uncertain_neighbors(f.x, f.y)
                                 for n in neighborhood:
                                     self.__board[n[0]][n[1]].safe = True
 
@@ -318,10 +348,11 @@ class MyAI(AI):
             pass
         return
     
-    def put_in_frontier(self, x, y):
-        if (x, y) not in self.__frontier:
-            self.__frontier.append((x, y))
+    def put_in_frontier(self, tile):
+        if not self.__frontier.isIn(tile):
+            self.__frontier.push(tile)
 
-    def remove_from_frontier(self, x, y):
-        if (x, y) in self.__frontier:
-            self.__frontier.remove((x, y))
+    def remove_from_frontier(self, tile):
+        if self.__frontier.isIn(tile):
+            self.__frontier.remove(tile)
+
