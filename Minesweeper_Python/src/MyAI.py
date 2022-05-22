@@ -12,6 +12,7 @@
 #				- DO NOT MAKE CHANGES TO THIS FILE.
 # ==============================CS-199==================================
 import random
+from turtle import update
 
 from AI import AI
 from Action import Action
@@ -62,7 +63,6 @@ class MyAI(AI):
         print("percept number:", number, "current x/y:", self.__currX, self.__currY)
         
         if number >= 0: # a/n un/flagging was not done, so we may set the label of the tile at the board
-            #print("Updating")
             # do not decrement numCovered here; causes the game to quit early in some cases
             tile = self.__board[self.__currX][self.__currY] # get the current tile from the board
             tile.label = number   # self.__board[self.__currX][self.__currY] = number; set the tile's label
@@ -78,60 +78,12 @@ class MyAI(AI):
         if self.__numCovered == self.__totalMines:
             print("Leaving")
             return Action(AI.Action.LEAVE)
-        
-        # get the neighbors of the current tile
-        # neighbors = self.get_neighbors(self.__currX, self.__currY)
-        
-        # logic rules
-        # 1. if tile = number N and has N flagged (-2) neighbors, all uncertain (-1) neighbors are safe; 
-        # change to "safe" on board (-3)
-        # 2. if tile = number N and has N uncertain (-1) neighbors, all those neighbors are mines (-2)
-        # list(filter(lambda ne: (self.__board[ne[0]][ne[1]].covered and not self.__board[ne[0]][ne[1]].flag and not self.__board[ne[0]][ne[1]].mine), neighbors))
-        #uncertain = self.get_uncertain_neighbors(self.__currX, self.__currY)
-        # list(filter(lambda ne: (self.__board[ne[0]][ne[1]].mine), neighbors))
-        #flagged = self.get_flagged_neighbors(self.__currX, self.__currY) 
-
-        # if (number == len(flagged)): # the number of flagged is equal to the tile number (found all mines in neighborhood)
-        #     print("All safe")
-        #     for x, y in uncertain:
-        #         # mark all other unknown tiles as safe
-        #         self.__board[x][y].safe = True
-        #     # all neighbors either flagged or uncovered = tile no longer in frontier
-        #     self.__frontier.remove((self.__currX, self.__currY)) 
-        
-        # elif (number == len(uncertain)): # the number of unknowns is equal to tile number
-        #     print("All mines")
-        #     for x, y in uncertain:
-        #         # mark all unknown tiles as mines
-        #         self.__board[x][y].mine = True
-        #     # all neighbors either flagged or uncovered = tile no longer in frontier
-        #     self.__frontier.remove((self.__currX, self.__currY)) 
 
         # update effective labels
         print("Updating elabels")
         self.update_elabels()
         # get frontier, covered unflagged neighbors are safe if elabels are zero
-        for f in self.__frontier:
-            tile = self.__board[f[0]][f[1]]
-            if tile.flag or tile.mine:
-                self.__frontier.remove(f)
-                continue
-            uncertain = self.get_uncertain_neighbors(f[0], f[1])
-            if len(uncertain) == 0:
-                self.__frontier.remove(f)
-                continue
-            if tile.elabel == 0:
-                print("All safe", f)                
-                for n in uncertain:
-                    self.__board[n[0]][n[1]].safe = True
-                # all neighbors either flagged or uncovered = tile no longer in frontier
-                self.__frontier.remove((f))
-            elif tile.elabel == len(uncertain):
-                print("All mines", f)
-                for n in uncertain:
-                    self.__board[n[0]][n[1]].mine = True
-                # all neighbors either flagged or uncovered = tile no longer in frontier
-                self.__frontier.remove((f))
+        self.update_frontier()
 
         # actions
         flagged = self.get_flagged()
@@ -264,30 +216,27 @@ class MyAI(AI):
             tile = self.__board[f[0]][f[1]]
             tile.elabel = tile.label - len(self.get_flagged_neighbors(f[0], f[1]))
 
-
-    def update_elabel(self, x, y):
-        """OLD -- Update a tile's effective label"""
-        # update tile's elabel
-        tile = self.__board[x][y]
-        # the effective label is the number of remaining mines in the tile's neighborhood
-        tile.elabel = tile.label - len(self.get_flagged_neighbors(x, y))
-        print(x, y, tile.elabel)
-        #update tile's neighbors' elabels
-        for n in self.get_uncovered_neighbors(x, y):
-            tile = self.__board[n[0]][n[1]]
-            tile.elabel = tile.label - len(self.get_flagged_neighbors(x, y))
-
-
-    def model_check(self): 
-        """I'm leavin this to you since idk what ur goal is"""
-        # get U/C in frontier
-        uncovered = self.__frontier.copy()
-        covered = []
-        for f in uncovered:
-            covered.append(self.get_uncertain_neighbors(f[0],f[1]))
-
-        for c in covered:
-            # TODO: generate assignments to C
-            # TODO: given assignment to C, check if elabel of each tile in U is satisfied
-            pass
-        return
+    def update_frontier(self):
+        for f in self.__frontier:
+            tile = self.__board[f[0]][f[1]]
+            # remove any flagged/surrounded tiles - shouldn't be needed but better safe than sorry
+            if tile.flag or tile.mine:
+                self.__frontier.remove(f)
+                continue
+            uncertain = self.get_uncertain_neighbors(f[0], f[1])
+            if len(uncertain) == 0:
+                self.__frontier.remove(f)
+                continue
+            # find safe/mine tiles
+            if tile.elabel == 0:
+                print("All safe", f)                
+                for n in uncertain:
+                    self.__board[n[0]][n[1]].safe = True
+                # all neighbors either flagged or uncovered = tile no longer in frontier
+                self.__frontier.remove((f))
+            elif tile.elabel == len(uncertain):
+                print("All mines", f)
+                for n in uncertain:
+                    self.__board[n[0]][n[1]].mine = True
+                # all neighbors either flagged or uncovered = tile no longer in frontier
+                self.__frontier.remove((f))
