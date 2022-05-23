@@ -309,8 +309,7 @@ class MyAI(AI):
             print("solving statements")
             self.solve_statements()
 
-		# if can't make a inference, make a random guess
-        if not self.moves:
+        if not self.moves: # if move list empty make a random guess
             print("make a guess")
             self.make_guess()
 
@@ -333,7 +332,7 @@ class MyAI(AI):
 
 ######################################################################################################################
     def minus(self, left, right):
-        if left.tiles.issubset(right.tiles) and len(left.tiles) > 0:
+        if left.tiles.issubset(right.tiles) and len(left.tiles) > 0 and left.tiles != right.tiles:
             return Sentence(right.tiles - left.tiles, right.count - left.count)
         else:
             return None
@@ -363,7 +362,7 @@ class MyAI(AI):
                         # print("get new")
                         #left.printSet()
                         #right.printSet()
-                        if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement
+                        if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement (and valid)
                             new_s.printSet()
                             # print("generated new statement that isnt in the knowledge base")
                             if self.isSolveable(new_s):
@@ -393,7 +392,9 @@ class MyAI(AI):
 
     def find_move(self) -> None:
         """Find a possible move by searching the frontier"""
+        print("Searching frontier")
         for tile in self.frontier:
+            print(tile)
             self.solve_tile(tile)
 
     def make_guess(self) -> None:
