@@ -71,14 +71,14 @@ class MyAI(AI):
         # all other covered tiles are safe. (may need to be implemented if this skip causes issues)
         if len(self.get_uncertain()) == 0:
             print("Leaving")
-            print(str(self.__board))
             return Action(AI.Action.LEAVE)
 
         # update effective labels
-        print("Updating elabels")
-        self.update_elabels()
         # get frontier, covered unflagged neighbors are safe if elabels are zero
-        self.update_frontier()
+        if self.__frontier:
+            print("Updating frontier", self.__frontier)
+            self.update_elabels()
+            self.update_frontier()
 
         # actions
         flagged = self.get_flagged()
@@ -89,6 +89,7 @@ class MyAI(AI):
             self.__board[flagged[0][0]][flagged[0][1]].safe = False
             return Action(AI.Action.FLAG, flagged[0][0], flagged[0][1])
         else:
+            print("in else block")
             # check if there are any safe tiles (-3)
             safe = self.get_safe() # get a safe tile to process
             if len(safe) != 0: # if there exists at least one safe tile, uncover
@@ -98,10 +99,10 @@ class MyAI(AI):
                 self.__currY = safe[0][1]
                 self.__numCovered -= 1 # a tile was uncovered, decrement covered count
                 return Action(AI.Action.UNCOVER, safe[0][0], safe[0][1])
-            else:                
-                rand = self.get_rand_from_frontier()
-                print("Choosing Uncertain Tile", rand)
-                if(rand):
+            else:       
+                if self.__frontier:
+                    rand = self.get_rand_from_frontier()
+                    print("Choosing Uncertain Tile", rand)
                     self.__currX = rand[0]
                     self.__currY = rand[1]
                     self.__numCovered -= 1 # a tile was uncovered, decrement covered count
@@ -174,7 +175,6 @@ class MyAI(AI):
             print(f, tile.elabel)
 
     def update_frontier(self):
-        print("Updating frontier")
         for f in self.__frontier:
             print(f)
             tile = self.__board[f[0]][f[1]]
