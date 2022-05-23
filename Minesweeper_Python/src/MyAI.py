@@ -423,9 +423,6 @@ class MyAI(AI):
 
     def solve_tile(self, t) -> None:
         if t.status <= -1:
-            # can't solve a covered tile
-            return
-        
         # check how many blocks around are solved or are mines.
         flagged = get_tile_mines(t)
         unknown = get_tile_unknown(t)
