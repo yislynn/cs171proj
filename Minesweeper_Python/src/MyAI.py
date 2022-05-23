@@ -45,6 +45,7 @@ class Sentence():
             return self.tiles
 
     def mark_mine(self, tile):
+        # if mined tile is in sentence, remove and decrement mine count
         if tile in self.tiles:
             self.tiles.remove(tile)
             self.count -= 1
@@ -159,8 +160,8 @@ class MyAI(AI):
 
         else:
             print("flag")
-            self.__board[x][y].flag() # mark as flagged
-            self.add_knowledge(self.__board[x][y], number) # add the new information to the knowledge base
+            self.__board[x][y].flag()          # mark as flagged
+            self.mark_mine(self.__board[x][y]) # mark as mine in kb
 
         return self.make_safe_move()
 
@@ -233,27 +234,30 @@ class MyAI(AI):
             sentence.mark_safe(tile)
 
     def add_knowledge(self, tile, count):
+        # only called if a tile is uncovered/safe
         print("################ ADD KNOWLEDGE")
         print("ADD KNOWLEDGE IS CURRENTLY WORKING WITH TILE", tile)
         
         # updating status information
         self.moves_made.add(tile) # add to moves made
-        if count != -1: # not a flagging action
-            self.mark_safe(tile)      # mark as safe (remove from rules); the tile is safe
-            tile.status = count       # change label to the uncovered mine value
-            
-            # create new sentence
-            tiles = self.get_tile_neighbors(tile) # get neighbors;
-            s = Sentence(tiles, count)
-            if s not in self.knowledge_base:
-                self.knowledge_base.append(s)     # add to knowledge base if not already in there
-        else:
-            self.mark_mine(tile)      # mark as safe (remove from rules); the tile is safe
-            
-            # create new sentence
-            s = Sentence([tile], 1)
-            if s not in self.knowledge_base:
-                self.knowledge_base.append(s)     # add to knowledge base if not already in there
+        self.mark_safe(tile)      # mark as safe (remove from rules); the tile is safe
+        tile.status = count       # change label to the uncovered mine value
+        
+
+        for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
+            # periodically remove the safe tiles
+            self.mark_safe(safe)
+
+        for mine in self.mines:
+            # periodically mark the mine tiles
+            self.mark_mine(mine)
+
+        # create new sentence
+        tiles = self.get_tile_neighbors(tile) # get neighbors;
+        s = Sentence(tiles, count)
+        if s not in self.knowledge_base:
+            self.knowledge_base.append(s)     # add to knowledge base if not already in there
+        
         print("KNOWLEDGE BASE:")
         for stmt in self.knowledge_base:
             stmt.printSet()
@@ -288,14 +292,6 @@ class MyAI(AI):
                     print("Adding to moves (add to kb mine tiles)")
                 if tile not in self.solved:
                     self.solved.append(tile) # add the tile as a known solved tile (all neighbors are mines)
-        
-        for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
-            # periodically remove the safe tiles
-            self.mark_safe(safe)
-
-        for mine in self.mines:
-            # periodically mark the mine tiles
-            self.mark_mine(mine)
 
         new_kb = []
         for s in self.knowledge_base:
@@ -405,6 +401,15 @@ class MyAI(AI):
 
     def solve_statements(self):
         print("solving statements start")
+
+        for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
+            # periodically remove the safe tiles
+            self.mark_safe(safe)
+
+        # for mine in self.mines:
+        #     # periodically mark the mine tiles
+        #     self.mark_mine(mine)
+
         infer_list = []
         gen_new = True
         while gen_new:
@@ -455,14 +460,6 @@ class MyAI(AI):
             else:
                 if s not in self.knowledge_base:
                     self.knowledge_base.append(s)
-
-        for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
-            # periodically remove the safe tiles
-            self.mark_safe(safe)
-
-        for mine in self.mines:
-            # periodically mark the mine tiles
-            self.mark_mine(mine)
 
         new_kb = []
         # check for empty sentences and remove them
