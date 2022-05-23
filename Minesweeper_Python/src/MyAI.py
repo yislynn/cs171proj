@@ -61,7 +61,7 @@ class MyAI(AI):
             tile = self.__board[self.__currX][self.__currY] # get the current tile from the board
             tile.label = number   # set the tile's label
             tile.covered = False  # mark tile as uncovered on the board
-        
+            tile.elabel = tile.label - len(self.get_flagged_neighbors(self.__currX, self.__currY))
         if (self.__currX, self.__currY) not in self.__frontier and number != -1: # add current tile to frontier if not already in frontier
             print("Adding to frontier")
             self.__frontier.append((self.__currX, self.__currY))
@@ -176,16 +176,16 @@ class MyAI(AI):
 
     def update_frontier(self):
         for f in self.__frontier:
-            print(f)
+            #print(f)
             tile = self.__board[f[0]][f[1]]
             # remove any flagged/surrounded tiles - shouldn't be needed but better safe than sorry
             if tile.flag or tile.mine:
                 print("- removing from frontier", f)
                 self.__frontier.remove(f)
                 continue
-            print("- getting uncertain")
+            #print("- getting uncertain")
             uncertain = self.get_uncertain_neighbors(f[0], f[1])
-            print("- uncertain", uncertain)
+            #print("- uncertain", uncertain)
             if len(uncertain) == 0:
                 print("- removing from frontier", f)
                 self.__frontier.remove(f)
@@ -203,7 +203,7 @@ class MyAI(AI):
                     self.__board[n[0]][n[1]].mine = True
                 # all neighbors either flagged or uncovered = tile no longer in frontier
                 self.__frontier.remove((f))
-            print("exiting update_frontier")
+            #print("exiting update_frontier")
 
     def get_rand_from_frontier(self):
         self.__frontier.sort(key = lambda n : self.__board[n[0]][n[1]].elabel)
