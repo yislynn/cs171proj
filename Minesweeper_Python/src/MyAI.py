@@ -8,8 +8,6 @@
 #				the constructor, and any additional helper functions.
 #
 # NOTES: 		- MyAI inherits from the abstract AI class in AI.py.
-#
-#				- DO NOT MAKE CHANGES TO THIS FILE.
 # ==============================CS-199==================================
 import random
 
@@ -55,7 +53,7 @@ class Sentence():
         if tile in self.tiles:
             self.tiles.remove(tile)
 
-#####################################################
+######################################################################################################################
 
 class Tile(): 
     # add tile class to describe board state
@@ -72,14 +70,6 @@ class Tile():
         self.elabel = -1
         self.x = x
         self.y = y
-
-        # self.adjacent_blocks = 8
-        # if self.x == 0 or self.x == bx - 1:
-        #     self.adjacent_blocks = self.adjacent_blocks - 3
-        # if self.y == 0 or self.y == by - 1:
-        #     self.adjacent_blocks = self.adjacent_blocks - 3
-        # if self.adjacent_blocks == 2:
-        #     self.adjacent_blocks = 3
 
     def uncover(self, num) -> None:
         if num >= 0:
@@ -115,10 +105,8 @@ class MyAI(AI):
         self.__currY = startY
         self.__numCovered = (self.__rows * self.__cols) - self.__totalMines
         # create a board of tiles; each will contain tile state information
+        
         self.__board = [[Tile(r, c, rowDimension, colDimension) for c in range(colDimension)] for r in range(rowDimension)]
-        # # create a frontier to contain the tiles currently operating on (tiles we aren't done with?)
-        # self.__frontier = PriorityQueue()
-        # self.put_in_frontier(self.__board[self.__currX][self.__currY])
 
         ####
         self.__prev_move = Action(AI.Action.UNCOVER, startX, startY)
@@ -135,38 +123,6 @@ class MyAI(AI):
         # self.solved = []
         self.moves = [] # solvable sentences
         self.frontier = []
-
-        # stmt representing all uncovered tiles
-        # tiles = []
-        # mines = 0
-        # for (x,line) in enumerate(self.__board):
-        #     for (y,tile) in enumerate(line):
-        #         if tile.status == -2 or tile.status == -4:
-        #             mines += 1
-        #         elif tile.status == -1:
-        #             # unknown tile
-        #             tiles.append(tile)
-
-        # cnt = totalMines - mines
-        # if cnt <= 5:
-        #     self.knowledge_base.append(Sentence(tiles, cnt))
-
-		# # add a statement when the tile is uncovered and on the edge
-        # for tile in self.frontier:
-        #     if tile.status >= 0:
-        #         adj_mine = 0
-        #         tiles = []
-        #         block_list = self.get_tile_neighbors(tile)
-        #         for adj_block in block_list:
-        #             if adj_block.status == -1:
-        #                 tiles.append(adj_block)
-        #             elif adj_block.status == -2 or adj_block.status == -4:
-        #                 adj_mine = adj_mine + 1
-        #         count = tile.label - adj_mine
-        #         if stmt not in self.statement_list:
-        #             self.knowledge_base.append(Sentence(tiles, count))
-
-
 
     ##################################################################################################################
     # Methods
@@ -196,129 +152,53 @@ class MyAI(AI):
     ##################################################################################################################
     # Methods
     ##################################################################################################################
-    
-    # def get_neighbors(self, x, y):
-    #     """Gets the nearest (valid) neighbors of the tile at x,y on the game board"""
-    #     neighbors = [(x - 1, y - 1), (x - 1, y), (x - 1, y + 1),
-    #                  (x, y - 1), (x, y + 1),
-    #                  (x + 1, y - 1), (x + 1, y), (x + 1, y + 1)]
-    #     ne = []
-    #     for n in neighbors:
-    #         # check if in bounds
-    #         if n[1] < self.__cols and n[1] >= 0 and n[0] < self.__rows and n[0] >= 0:
-    #             ne.append(n)
-    #     return ne
+
+    def get_neighbors(self, x, y):
+        """Gets the nearest (valid) neighbor coordinates of the tile at x,y on the game board"""
+        neighbors = [(x - 1, y - 1), (x - 1, y), (x - 1, y + 1),
+                     (x, y - 1), (x, y + 1),
+                     (x + 1, y - 1), (x + 1, y), (x + 1, y + 1)]
+        ne = []
+        for n in neighbors:
+            # check if in bounds
+            if n[1] < self.__cols and n[1] >= 0 and n[0] < self.__rows and n[0] >= 0:
+                ne.append(n)
+        return ne
 
     def get_tile_neighbors(self, tile):
+        """Gets the neighboring tiles of the given tile"""
         n = self.get_neighbors(tile.x, tile.y)
         tiles = []
         for x,y in n:
             tiles.append(self.__board[x][y])
         return tiles
-
-    # def get_safe(self):
-    #     """Gets all known safe tiles on the game board"""
-    #     # safe, uncovered tiles
-    #     safe = []
-    #     for i in range(self.__rows):
-    #         for j in range(self.__cols):
-    #             if self.__board[i][j].status == -3:
-    #                 safe.append((i, j))
-    #     return safe
     
     def get_tile_safe(self, tile):
+        """Gets the tiles that are considered safe"""
         n = self.get_neighbors(tile.x, tile.y)
         tiles = []
         for x,y in n:
             if self.__board[x][y].status == -3:
                 tiles.append(self.__board[x][y])
         return tiles
-
-    # def get_uncertain(self):
-    #     """Gets all (status) unknown tiles on the game board"""
-    #     # unknown tiles, unflagged (status unknown)
-    #     idk = []
-    #     for i in range(self.__rows):
-    #         for j in range(self.__cols):
-    #             if self.__board[i][j].status == -1:
-    #                 idk.append((i, j))
-    #     return idk
-
-    # def get_flagged(self):
-    #     """Gets all known mine tiles on the game board"""
-    #     # unknown, flagged tiles
-    #     flags = []
-    #     for i in range(self.__rows):
-    #         for j in range(self.__cols):
-    #             # get mine tiles that are not marked on the board
-    #             if self.__board[x][y].status == -2 or self.__board[x][y].status == -4:
-    #                 flags.append((i, j))
-    #     return flags
     
     def get_tile_mines(self, tile):
+        """Gets the neighbors that should have mines"""
         n = self.get_neighbors(tile.x, tile.y)
         tiles = []
         for x,y in n:
             if self.__board[x][y].status == -2 or self.__board[x][y].status == -4:
                 tiles.append(self.__board[x][y])
         return tiles
-    
-    # def get_uncovered_neighbors(self, x, y): 
-    #     """Gets all neighboring uncovered tiles"""
-    #     return list(filter(lambda tile: self.__board[tile[0]][tile[1]].status >= 0, self.get_neighbors(x,y))) # and not self.__board[tile[0]][tile[1]].flag and not self.__board[tile[0]][tile[1]].mine
 
-    # def get_uncertain_neighbors(self, x, y):
-    #     """Gets all neighboring covered (but not mine/flagged) tiles"""
-    #     # covered, not flag or mine
-    #     return list(filter(lambda tile: self.__board[tile[0]][tile[1]].status == -1, self.get_neighbors(x,y)))
-
-    # def get_flagged_neighbors(self, x, y): 
-    #     """Gets all neighboring flagged/mine tiles"""
-    #     # mine or flag
-    #     return list(filter(lambda tile: self.__board[tile[0]][tile[1]].status == -2 or self.__board[tile[0]][tile[1]].status == -4, self.get_neighbors(x,y))) # and self.__board[tile[0]][tile[1]].covered, self.getNeighbors(x,y)))
-
-    # def update_elabel(self, x, y):
-    #     """Update a tile's effective label"""
-    #     # update tile's elabel
-    #     tile = self.__board[x][y]
-    #     # the effective label is the number of remaining mines in the tile's neighborhood
-    #     tile.elabel = tile.label - len(self.get_flagged_neighbors(x, y))
-
-    # def update_mine_elabel(self, x, y):
-    #     """Update the effective label of the neighbors of a mine tile"""
-    #     for n in self.get_uncovered_neighbors(x, y):
-    #         tile = self.__board[n[0]][n[1]]
-    #         self.update_elabel(n[0], n[1])
-
-    # def model_check(self): 
-    #     """I'm leavin this to you since idk what ur goal is"""
-    #     # get U/C in frontier
-    #     uncovered = self.__frontier.copy()
-    #     covered = []
-    #     for f in uncovered:
-    #         covered.append(self.get_uncertain_neighbors(f[0],f[1]))
-
-    #     for c in covered:
-    #         # TODO: generate assignments to C
-    #         # TODO: given assignment to C, check if elabel of each tile in U is satisfied
-    #         pass
-    #     return
-    
-    # def put_in_frontier(self, tile):
-    #     if not self.__frontier.isIn(tile):
-    #         self.__frontier.push(tile)
-
-    # def remove_from_frontier(self, tile):
-    #     if self.__frontier.isIn(tile):
-    #         self.__frontier.remove(tile)
-
-    #####################################################################################################################
+    ##################################################################################################################
     def mark_mine(self, tile):
         """
         Marks a cell as a mine, and updates all knowledge
         to mark that cell as a mine as well.
         """
         self.mines.append(tile)
+        tile.status = -2
         for sentence in self.knowledge_base:
             sentence.mark_mine(tile)
 
@@ -328,6 +208,7 @@ class MyAI(AI):
         to mark that cell as safe as well.
         """
         self.safes.append(tile)
+        tile.status = -3
         for sentence in self.knowledge_base:
             sentence.mark_safe(tile)
 
@@ -347,19 +228,12 @@ class MyAI(AI):
         """
         self.moves_made.add(tile)
         self.safes.add(tile)
+        self.mark_safe(tile)
 
         tiles = self.get_tile_neighbors(tile)
-        # tileset = []
-        # for t in tiles:
-        #     if t.status
         self.knowledge_base.append(Sentence(tiles, count))
 
-        # do a subset operation to find the mines that we can get new knowledge from
-
         self.solve_statements()
-
-        # add newly inferred knowledge
-
 
     def make_safe_move(self):
         """
@@ -398,7 +272,7 @@ class MyAI(AI):
         """
         raise NotImplementedError
 
-#############################################################################################################
+######################################################################################################################
     def minus(self, left, right):
         if left.tiles.issubset(right.tiles):
             return Sentence(left.tiles, right.count - left.count)
@@ -437,17 +311,21 @@ class MyAI(AI):
         for s in infer_list:
             if s.count == 0:
                 for tile in s.tiles:
+                    self.mark_safe(tile)
                     self.moves.append(Action(AI.Action.UNCOVER,tile.x,tile.y))
             elif len(s.tiles)==s.count:
                 for tile in s.tiles:
+                    self.mark_mine(tile)
                     self.moves.append(Action(AI.Action.FLAG,tile.x,tile.y))
 
     def find_move(self) -> None:
-        for block_edge in self.frontier:
-            self.solve_block(block_edge)
+        """Find a possible move by searching the frontier"""
+        for tile in self.frontier:
+            self.solve_block(tile)
 
     def make_guess(self) -> None:
-        unsolved = [(self.__currX, self.__currY)]
+        """Choose a random tile to uncover and append it to the moves list"""
+        unsolved = [] # list of unknowns
         for x in range(0, self.__rows):
             for y in range(0, self.__cols):
                 if (self.__board[x][y].status == -1):
@@ -455,8 +333,8 @@ class MyAI(AI):
         (x,y) = random.choice(unsolved)
         self.moves.append(Action(AI.Action.UNCOVER,x,y))
 
-
     def solve_block(self, b) -> None:
+        # an issue?
         if b.status <= -1:
             return
         
@@ -464,13 +342,13 @@ class MyAI(AI):
         block = self.get_tile_neighbors(b)
         mine_cnt = 0
         uncovered_cnt = 0
-        unsolved = []
+        unsolved = [] 
         for adj_block in block:
             if adj_block.status == -2 or adj_block.status == -4:
                 mine_cnt = mine_cnt + 1
             elif adj_block.status >= 0:
                 uncovered_cnt = uncovered_cnt + 1
-            elif adj_block.status == -1 or adj_block.status == -3:
+            elif adj_block.status == -1:
                 unsolved.append(adj_block)
             else:
                 #print("Error status in this block:", b.x, b.y
@@ -482,7 +360,6 @@ class MyAI(AI):
             self.frontier.remove(b)
             #print("outer_edge removed",b.x,b.y,mine_cnt,uncovered_cnt)
         
-        #print("mine, uncovered, unsolved, status:" ,mine_cnt,uncovered_cnt,len(unsolved),b.status)
         # if all are solvable (i.e. enough mines flagged around)
         if mine_cnt==b.status:
             for solvable_block in unsolved:
