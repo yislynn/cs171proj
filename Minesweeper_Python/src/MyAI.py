@@ -314,6 +314,7 @@ class MyAI(AI):
             self.make_guess()
 
         # get a move
+        print("MOVES HAS LEN", len(self.moves))
         next_move = self.moves.pop()
         print("get a move")
         self.__prev_move = next_move
@@ -402,14 +403,23 @@ class MyAI(AI):
 
     def make_guess(self) -> None:
         """Choose a random tile to uncover and append it to the moves list"""
+        print("In make guess")
         unsolved = [] # list of unknowns
+        print(self.__rows, self.__cols)
         for x in range(0, self.__rows):
             for y in range(0, self.__cols):
+                print("checkin time")
                 if (self.__board[x][y].status == -1):
+                    print("found an unknown")
                     unsolved.append((x, y))
-        (x,y) = random.choice(unsolved)
-        print("Adding to moves (made a guess)")
+        print("got the unknowns (make guess)")
+        try:
+            (x,y) = random.choice(unsolved)
+        except:
+            print("Literally what the fuck")
+        print("/n/n/n/n/n/n/n/n\n\n\n\n\n\\\n\nAdding to moves (made a guess):", x, y)
         self.moves.append(Action(AI.Action.UNCOVER,x,y))
+        return
 
     def solve_tile(self, t) -> None:
         if t.status <= -1:
