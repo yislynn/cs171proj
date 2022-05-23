@@ -229,6 +229,7 @@ class MyAI(AI):
     def add_knowledge(self, tile, count):
         print("################ ADD KNOWLEDGE")
         print("updating status as safe/marked")
+        print("ADD KNOWLEDGE IS CURRENTLY WORKING WITH TILE", tile)
         self.moves_made.add(tile) # add to moves made
         self.safes.add(tile) # add to list of safe tiles
         self.mark_safe(tile) # mark as safe (remove from rules)
@@ -238,18 +239,19 @@ class MyAI(AI):
         s = Sentence(tiles, count) # create a sentence
         print("adding:")
         s.printSet()
-        self.knowledge_base.append(s) # add to knowledge base
+        if s not in self.knowledge_base:
+            self.knowledge_base.append(s) # add to knowledge base
 
-        for safe in self.safes:
-            # periodically remove the safe tiles
-            self.mark_safe(safe)
-
-        for mine in self.mines:
-            # periodically mark the mine tiles
-            self.mark_mine(mine)
-
-        print("if solveable add")
+        print("SOLVED LIST:")
+        for t in self.solved:
+            print(t)
+        print("END OF SOLVED LIST")
         if self.isSolveable(s) and tile not in self.solved:
+            print("solveable")
+            s.printSet()
+            for s in self.solved:
+                print(s)
+            
             # if the tile is solveable (surroundings known)
             # and the tile is not solved
             self.knowledge_base.remove(s)
@@ -259,19 +261,22 @@ class MyAI(AI):
                     self.mark_safe(t) # mark all tiles as safe
                     print("Adding to moves (add to kb safe tiles)")
                     self.moves.append(Action(AI.Action.UNCOVER,t.x,t.y)) # need to uncover
-                self.solved.append(tile) # add the tile as a known solved tile
+                if tile not in self.solved:
+                    self.solved.append(tile) # add the tile as a known solved tile
             else: # all tiles in the set are mines
                 ti = list(s.tiles)
                 for t in ti:
                     self.mark_mine(t) # mark all tiles as mines
                     print("Adding to moves (add to kb mine tiles)")
                     self.moves.append(Action(AI.Action.FLAG,t.x,t.y)) # need to uncover
-                self.solved.append(tile) # add the tile as a known solved tile
-        
+                if tile not in self.solved:
+                    self.solved.append(tile) # add the tile as a known solved tile
+
         for s in self.knowledge_base:
             if self.isSolveable(s) and tile not in self.solved:
                 # if the tile is solveable (surroundings known)
                 # and the tile is not solved
+
                 self.knowledge_base.remove(s)
                 if s.count == 0: # there are no mines
                     ti = list(s.tiles)
@@ -279,14 +284,24 @@ class MyAI(AI):
                         self.mark_safe(t) # mark all tiles as safe
                         print("Adding to moves (add to kb safe tiles)")
                         self.moves.append(Action(AI.Action.UNCOVER,t.x,t.y)) # need to uncover
-                    self.solved.append(tile) # add the tile as a known solved tile
+                    if tile not in self.solved:
+                        self.solved.append(tile) # add the tile as a known solved tile
                 else: # all tiles in the set are mines
                     ti = list(s.tiles)
                     for t in ti:
                         self.mark_mine(t) # mark all tiles as mines
                         print("Adding to moves (add to kb mine tiles)")
                         self.moves.append(Action(AI.Action.FLAG,t.x,t.y)) # need to uncover
-                    self.solved.append(tile) # add the tile as a known solved tile
+                    if tile not in self.solved:
+                        self.solved.append(tile) # add the tile as a known solved tile
+
+        for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
+            # periodically remove the safe tiles
+            self.mark_safe(safe)
+
+        for mine in self.mines:
+            # periodically mark the mine tiles
+            self.mark_mine(mine)
 
         print("solving statements")
         self.solve_statements()
@@ -340,10 +355,15 @@ class MyAI(AI):
 
     def isSolveable(self, stmt) -> bool:
         if len(stmt.tiles) == 0: # must be at least 1 element in list
+            print("No tiles in the list")
             return False
         # there are no mines in the tile list or
         # all tiles are mines
-        if stmt.count == 0 or len(stmt.tiles) == stmt.count:
+        if stmt.count == 0:
+            print("NO MINES")
+            return True
+        elif len(stmt.tiles) == stmt.count:
+            print("all mines!!!!")
             return True
         return False
 
@@ -403,6 +423,19 @@ class MyAI(AI):
 
     def make_guess(self) -> None:
         """Choose a random tile to uncover and append it to the moves list"""
+        print("make a random move")
+        # get a sentence from the knowledge base and choose one of the tiles to uncover
+        if len(self.knowledge_base) > 0:
+            moveset = sorted(self.knowledge_base, key=lambda x: len(x.tiles), reverse=True)
+            moveset = sorted(moveset, key=lambda x: x.count)
+
+            moves = moveset[0].tiles
+
+            move = random.choice(list(moves))
+
+            self.moves.append(Action(AI.Action.UNCOVER, move.x, move.y))
+            return
+
         print("In make guess")
         unsolved = [] # list of unknowns
         print(self.__rows, self.__cols)
@@ -413,22 +446,25 @@ class MyAI(AI):
                     print("found an unknown")
                     unsolved.append((x, y))
         print("got the unknowns (make guess)")
-        try:
+        if len(unsolved) > 0:
             (x,y) = random.choice(unsolved)
-        except:
-            print("Literally what the fuck")
-        print("/n/n/n/n/n/n/n/n\n\n\n\n\n\\\n\nAdding to moves (made a guess):", x, y)
-        self.moves.append(Action(AI.Action.UNCOVER,x,y))
+            print("Adding to moves (made a guess):", x, y)
+            self.moves.append(Action(AI.Action.UNCOVER,x,y))
+            return
+        else:
+            # model checking?
+            pass
         return
 
     def solve_tile(self, t) -> None:
         if t.status <= -1:
-        # check how many blocks around are solved or are mines.
-        flagged = get_tile_mines(t)
-        unknown = get_tile_unknown(t)
+            # check how many blocks around are solved or are mines.
+            flagged = self.get_tile_mines(t)
+            unknown = self.get_tile_unknown(t)
 
         if t.label == len(flagged):
-            self.solved.append(t)
+            if t not in self.solved:
+                self.solved.append(t) # add the tile as a known solved tile
             self.frontier.remove(t)
             for tile in unknown:
                 tile.status = -3
@@ -437,7 +473,8 @@ class MyAI(AI):
                     self.moves.append(Action(AI.Action.UNCOVER, tile.x, tile.y))
 
         if t.label == len(unknown):
-            self.solved.append(t)
+            if t not in self.solved:
+                self.solved.append(t) # add the tile as a known solved tile
             self.frontier.remove(t)
             for tile in unknown:
                 tile.status = -2
