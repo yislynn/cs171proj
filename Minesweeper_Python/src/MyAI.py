@@ -252,7 +252,14 @@ class MyAI(AI):
             # periodically mark the mine tiles
             self.mark_mine(mine)
 
-        # create new sentence
+        new_kb = []
+        # check for empty sentences and remove them
+        for s in self.knowledge_base:
+            if len(s.tiles) != 0:
+                new_kb.append(s)
+        self.knowledge_base = new_kb
+
+        # create new sentence and add it to the knowledge base, if possible
         tiles = self.get_tile_neighbors(tile) # get neighbors;
         s = Sentence(tiles, count)
         if s not in self.knowledge_base:
@@ -299,7 +306,6 @@ class MyAI(AI):
             solveable = self.isSolveable(s)
             if solveable and tile not in self.solved:
                 # if the tile is solveable (surroundings known) and the tile is not solved
-                # self.knowledge_base.remove(s)
                 if s.count == 0:                 # Case 1: there are no mines
                     ti = list(s.tiles)
                     for t in ti:
@@ -319,21 +325,6 @@ class MyAI(AI):
                 # the tile is not solveable. add to new kb
                 new_kb.append(s)
         self.knowledge_base = new_kb
-        
-        # for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
-        #     # periodically remove the safe tiles
-        #     self.mark_safe(safe)
-
-        # for mine in self.mines:
-        #     # periodically mark the mine tiles
-        #     self.mark_mine(mine)
-
-        # new_kb = []
-        # # check for empty sentences and remove them
-        # for s in self.knowledge_base:
-        #     if len(s.tiles) != 0:
-        #         new_kb.append(s)
-        # self.knowledge_base = new_kb
 
         print("solving statements")
         self.solve_statements()
@@ -457,17 +448,6 @@ class MyAI(AI):
                     print("Adding to moves (inferred new statements = mines)")
                 if tile not in self.solved:
                     self.solved.append(tile)
-            else:
-                if s not in self.knowledge_base:
-                    self.knowledge_base.append(s)
-
-        new_kb = []
-        # check for empty sentences and remove them
-        for s in self.knowledge_base:
-            if len(s.tiles) != 0:
-                new_kb.append(s)
-        self.knowledge_base = new_kb
-            
 
     def find_move(self) -> None:
         """Find a possible move by searching the frontier"""
