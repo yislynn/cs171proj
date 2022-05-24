@@ -152,6 +152,15 @@ class MyAI(AI):
         self.__currX = x # update coordinates of previous moves
         self.__currY = y
 
+        print("########################################################################")
+
+        for i in range(self.__rows):
+            for j in range(self.__cols):
+                print('{: .0f}'.format(self.__board[i][j].status), end=" ")
+            print()
+
+        print("########################################################################")
+
         if len(self.mines) == self.__totalMines:
             return Action(AI.Action.LEAVE)
 
@@ -209,7 +218,7 @@ class MyAI(AI):
         n = self.get_neighbors(tile.x, tile.y)
         tiles = []
         for x,y in n:
-            if self.__board[x][y].status == -3:
+            if self.__board[x][y].status >= 0:
                 tiles.append(self.__board[x][y])
         return tiles
     
@@ -253,7 +262,7 @@ class MyAI(AI):
         print("ADD KNOWLEDGE IS CURRENTLY WORKING WITH TILE", tile)
         
         # updating status information
-        self.moves_made.add(tile) # add to moves made
+        # self.moves_made.add(tile) # add to moves made
         self.mark_safe(tile)      # mark as safe (remove from rules); the tile is safe
         # tile.status = count       # change label to the uncovered mine value
 
@@ -523,6 +532,20 @@ class MyAI(AI):
                 #     self.solved.append(tile)
                 # if tile in self.frontier:
                 #     self.frontier.remove(tile)
+        
+        new_frontier = []
+        for t in self.frontier:
+            uncovered = self.get_tile_safe(t)
+            mine = self.get_tile_mines(t)
+            neighborhood = self.get_tile_neighbors(t)
+            if len(uncovered) + len(mine) == len(neighborhood):
+                if t not in self.solved:
+                    self.solved.append(t)
+            else:
+                new_frontier.append(t)
+        self.frontier = new_frontier
+
+
 
     def find_move(self) -> None:
         """Find a possible move by searching the frontier"""
@@ -568,7 +591,6 @@ class MyAI(AI):
         print(self.__rows, self.__cols)
         for x in range(0, self.__rows):
             for y in range(0, self.__cols):
-                print("checkin time")
                 if self.__board[x][y].status == -1 or (self.__board[x][y].status >=0 and self.__board[x][y] not in self.moves_made):
                     print("found an unknown")
                     unsolved.append((x, y))
