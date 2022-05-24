@@ -142,6 +142,9 @@ class MyAI(AI):
         self.__currX = x # update coordinates of previous moves
         self.__currY = y
 
+        if len(self.mines) == self.__totalMines:
+            return Action(AI.Action.LEAVE)
+
         print("SOLVED:")
         for t in self.solved:
             print(t)
@@ -275,6 +278,9 @@ class MyAI(AI):
             print(t)
         print("END OF SOLVED LIST")
         
+        print("THE NEW SENTENCE IS SOLVEABLE?", self.isSolveable(s))
+        print("THE TILE IS IN SOLVED LIST?", tile in self.solved)
+
         # check if the sentence is solveable
         if len(s.tiles) == 0:
             print("The tile neighborhood was conmpletely filled with safe/mine tiles")
@@ -440,7 +446,7 @@ class MyAI(AI):
                                             s.mark_safe(tile)
                                         if tile in self.mines:
                                             s.mark_mine(tile)
-                                    if len(new_s) != 0:
+                                    if len(new_s.tiles) != 0:
                                         new_stmts.append(new_s)
 
                                     # print("gen new")
@@ -485,10 +491,9 @@ class MyAI(AI):
             moveset = sorted(moveset, key=lambda x: x.count)
 
             moves = moveset[0].tiles
-
-            move = random.choice(list(moves))
-
-            self.addMove(move, Action(AI.Action.UNCOVER,move.x,move.y))
+            if (len(moves) != 0):
+                move = random.choice(list(moves))
+                self.addMove(move, Action(AI.Action.UNCOVER,move.x,move.y))
             return
 
         print("In make guess")
@@ -497,7 +502,7 @@ class MyAI(AI):
         for x in range(0, self.__rows):
             for y in range(0, self.__cols):
                 print("checkin time")
-                if self.__board[x][y].status == -1:
+                if self.__board[x][y].status == -1 or (self.__board[x][y].status == -1 and self.__board[x][y] not in self.moves_made):
                     print("found an unknown")
                     unsolved.append((x, y))
         print("got the unknowns (make guess)")
@@ -507,8 +512,8 @@ class MyAI(AI):
             self.addMove(self.__board[x][y], Action(AI.Action.UNCOVER, x, y))
             return
         else:
-            # model checking?
-            pass
+            if len(self.mines) == self.__totalMines:
+                self.moves.append(Action(AI.Action.LEAVE))
         return
 
     def solve_tile(self, t) -> None:
