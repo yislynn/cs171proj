@@ -161,8 +161,8 @@ class MyAI(AI):
 
         print("########################################################################")
 
-        if len(self.mines) == self.__totalMines:
-            return Action(AI.Action.LEAVE)
+        if len(self.moves_made) == self.__rows * self.__cols:
+            self.moves.append(Action(AI.Action.LEAVE))
 
         # print("SOLVED:")
         # for t in self.solved:
@@ -338,39 +338,6 @@ class MyAI(AI):
                     self.solved.append(tile)         # add the tile as a known solved tile (all neighbors are mines)
                 if tile in self.frontier:
                     self.frontier.remove(tile)
-        ######################################################################## EXTRANEOUS?
-        # print("double checking")
-        # new_kb = []
-        # for s in self.knowledge_base:
-        #     # double check knowledge base after adding new sentence
-        #     solveable = self.isSolveable(s)
-        #     if solveable and tile not in self.solved:
-        #         # if the tile is solveable (surroundings known) and the tile is not solved
-        #         if s.count == 0:                 # Case 1: there are no mines
-        #             ti = list(s.tiles)
-        #             for t in ti:
-        #                 self.mark_safe(t)        # mark all tiles as safe
-        #                 print("Adding to moves (add to kb safe tiles)")
-        #             if tile not in self.solved:
-        #                 print("Adding", tile, "to solved")
-        #                 self.solved.append(tile) # add the tile as a known solved tile
-        #             if tile in self.frontier:
-        #                 self.frontier.remove(tile)
-        #         else:                            # Case 2: all tiles in the set are mines
-        #             new_kb.append(s)             # add to new kb
-        #             ti = list(s.tiles)
-        #             for t in ti:
-        #                 self.mark_mine(t)        # mark all tiles as mines
-        #                 print("Adding to moves (add to kb mine tiles)")
-        #             if tile not in self.solved:
-        #                 print("Adding", tile, "to solved")
-        #                 self.solved.append(tile) # add the tile as a known solved tile
-        #             if tile in self.frontier:
-        #                 self.frontier.remove(tile)
-        #     elif not solveable:
-        #         # the tile is not solveable. add to new kb
-        #         new_kb.append(sentence)
-        # self.knowledge_base = new_kb
 
         print("solving statements")
         self.solve_statements()
@@ -518,20 +485,10 @@ class MyAI(AI):
                 for tile in s.tiles:
                     self.mark_safe(tile)
                     print("Adding to moves (inferred new statements = safe)")
-                # if tile not in self.solved:
-                #     print("Adding", tile, "to solved")
-                #     self.solved.append(tile)
-                # if tile in self.frontier:
-                #     self.frontier.remove(tile)
             elif len(s.tiles)==s.count:
                 for tile in s.tiles:
                     self.mark_mine(tile)
                     print("Adding to moves (inferred new statements = mines)")
-                # if tile not in self.solved:
-                #     print("Adding", tile, "to solved")
-                #     self.solved.append(tile)
-                # if tile in self.frontier:
-                #     self.frontier.remove(tile)
         
         new_frontier = []
         for t in self.frontier:
@@ -602,7 +559,7 @@ class MyAI(AI):
             return
         
         else:
-            if len(self.mines) == self.__totalMines:
+            if len(self.moves_made) == self.__rows * self.__cols:
                 self.moves.append(Action(AI.Action.LEAVE))
         return
 
