@@ -255,15 +255,15 @@ class MyAI(AI):
 
         # create new sentence and add it to the knowledge base, if possible
         tiles = self.get_tile_neighbors(tile) # get neighbors;
-        s = Sentence(tiles, count)
+        sentence = Sentence(tiles, count)
         for tile in tiles:
             if tile in self.safes:
-                s.mark_safe(tile)
+                sentence.mark_safe(tile)
             if tile in self.mines:
-                s.mark_mine(tile)
+                sentence.mark_mine(tile)
 
-        if s not in self.knowledge_base:
-            self.knowledge_base.append(s)     # add to knowledge base if not already in there
+        if sentence not in self.knowledge_base:
+            self.knowledge_base.append(sentence)     # add to knowledge base if not already in there
         
         print("KNOWLEDGE BASE:")
         for stmt in self.knowledge_base:
@@ -282,16 +282,16 @@ class MyAI(AI):
         print("THE TILE IS IN SOLVED LIST?", tile in self.solved)
 
         # check if the sentence is solveable
-        if len(s.tiles) == 0:
+        if len(sentence.tiles) == 0:
             print("The tile neighborhood was conmpletely filled with safe/mine tiles")
-            self.knowledge_base.remove(s)
+            self.knowledge_base.remove(sentence)
             print("Removed the empty sentence from the kb")
-        elif self.isSolveable(s) and tile not in self.solved:
+        elif self.isSolveable(sentence) and tile not in self.solved:
             print("solveable")
             # if the tile is solveable (surroundings known) and the tile is not solved: 
-            if s.count == 0:                  # case one: there are no mines
+            if sentence.count == 0:                  # case one: there are no mines
                 self.knowledge_base.remove(s) # remove from knowledge base (provides no additional information)
-                ti = list(s.tiles)            # get the tiles
+                ti = list(sentence.tiles)            # get the tiles
                 for t in ti:
                     self.mark_safe(t)         # mark all tiles in the list as safe
                     print("Adding to moves (add to kb safe tiles)")
@@ -302,7 +302,7 @@ class MyAI(AI):
                     self.frontier.remove(tile)
             
             else:                             # case 2: all tiles in the set are mines
-                ti = list(s.tiles)
+                ti = list(sentence.tiles)
                 for t in ti:
                     self.mark_mine(t)         # mark all tiles as mines
                     print("Adding to moves (add to kb mine tiles)")
@@ -311,6 +311,7 @@ class MyAI(AI):
                     self.solved.append(tile) # add the tile as a known solved tile (all neighbors are mines)
                 if tile in self.frontier:
                     self.frontier.remove(tile)
+        ######################################################################## EXTRANEOUS?
         print("double checking")
         new_kb = []
         for s in self.knowledge_base:
@@ -341,11 +342,11 @@ class MyAI(AI):
                         self.frontier.remove(tile)
             elif not solveable:
                 # the tile is not solveable. add to new kb
-                new_kb.append(s)
+                new_kb.append(sentence)
         self.knowledge_base = new_kb
 
         print("solving statements")
-        self.solve_statements()
+        self.solve_statements(sentence)
 
     def make_safe_move(self):
         print("moves:")
@@ -400,7 +401,7 @@ class MyAI(AI):
         print("NOT SOLVEABLE")
         return False
 
-    def solve_statements(self):
+    def solve_statements(self, sentence):
         print("solving statements start")
 
         for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
@@ -417,40 +418,69 @@ class MyAI(AI):
             print("inloop")
             gen_new = False
             new_stmts = []
-            for left in self.knowledge_base:
-                for right in self.knowledge_base:
-                    if left != right:
-                        # print("not the same")
-                        new_s = self.minus(left, right)
-                        # print("get new")
-                        #left.printSet()
-                        #right.printSet()
-                        if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement (and valid)
-                            print("NEWLY GEN STATEMENT:")
-                            new_s.printSet()
-                            # print("generated new statement that isnt in the knowledge base")
-                            if self.isSolveable(new_s):
-                                # print("new_s is solveable")
-                                if new_s not in infer_list:
-                                    # print("appending")
-                                    infer_list.append(new_s)
-                            else:
-                                # print("not solveable")
-                                if (new_s not in self.knowledge_base) and (new_s not in new_stmts):
-                                    # print("not in knowledge base, or in new statements")
-                                    print("GENERATED:")
-                                    new_s.printSet()
+            for right in self.knowledge_base:
+                if sentence != right:
+                    # print("not the same")
+                    new_s = self.minus(sentence, right)
+                    # print("get new")
+                    #left.printSet()
+                    #right.printSet()
+                    if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement (and valid)
+                        print("NEWLY GEN STATEMENT:")
+                        new_s.printSet()
+                        # print("generated new statement that isnt in the knowledge base")
+                        if self.isSolveable(new_s):
+                            # print("new_s is solveable")
+                            if new_s not in infer_list:
+                                # print("appending")
+                                infer_list.append(new_s)
+                        else:
+                            # print("not solveable")
+                            if (new_s not in self.knowledge_base) and (new_s not in new_stmts):
+                                # print("not in knowledge base, or in new statements")
+                                print("GENERATED:")
+                                new_s.printSet()
 
-                                    for tile in new_s.tiles:
-                                        if tile in self.safes:
-                                            s.mark_safe(tile)
-                                        if tile in self.mines:
-                                            s.mark_mine(tile)
-                                    if len(new_s.tiles) != 0:
-                                        new_stmts.append(new_s)
+                                for tile in new_s.tiles:
+                                    if tile in self.safes:
+                                        s.mark_safe(tile)
+                                    if tile in self.mines:
+                                        s.mark_mine(tile)
+                                if len(new_s.tiles) != 0:
+                                    new_stmts.append(new_s)
 
-                                    # print("gen new")
-                                    gen_new = True
+                                # print("gen new")
+                                gen_new = True
+                    new_s = self.minus(right, sentence)
+                    # print("get new")
+                    #left.printSet()
+                    #right.printSet()
+                    if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement (and valid)
+                        print("NEWLY GEN STATEMENT:")
+                        new_s.printSet()
+                        # print("generated new statement that isnt in the knowledge base")
+                        if self.isSolveable(new_s):
+                            # print("new_s is solveable")
+                            if new_s not in infer_list:
+                                # print("appending")
+                                infer_list.append(new_s)
+                        else:
+                            # print("not solveable")
+                            if (new_s not in self.knowledge_base) and (new_s not in new_stmts):
+                                # print("not in knowledge base, or in new statements")
+                                print("GENERATED:")
+                                new_s.printSet()
+
+                                for tile in new_s.tiles:
+                                    if tile in self.safes:
+                                        s.mark_safe(tile)
+                                    if tile in self.mines:
+                                        s.mark_mine(tile)
+                                if len(new_s.tiles) != 0:
+                                    new_stmts.append(new_s)
+
+                                # print("gen new")
+                                gen_new = True
             print("extend")
             self.knowledge_base.extend(new_stmts)
         print("while loop end")
