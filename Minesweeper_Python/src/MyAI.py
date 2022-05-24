@@ -148,18 +148,18 @@ class MyAI(AI):
     def getAction(self, number: int) -> "Action Object":
         x = self.__prev_move.getX()
         y = self.__prev_move.getY()
-        print(number, x, y)
+        # print(number, x, y)
         self.__currX = x # update coordinates of previous moves
         self.__currY = y
 
-        print("########################################################################")
+        # print("########################################################################")
 
-        for i in range(self.__rows):
-            for j in range(self.__cols):
-                print('{: .0f}'.format(self.__board[i][j].status), end=" ")
-            print()
+        # for i in range(self.__rows):
+        #     for j in range(self.__cols):
+        #         print('{: .0f}'.format(self.__board[i][j].status), end=" ")
+        #     print()
 
-        print("########################################################################")
+        # print("########################################################################")
 
         if len(self.moves_made) == self.__rows * self.__cols:
             self.moves.append(Action(AI.Action.LEAVE))
@@ -168,9 +168,9 @@ class MyAI(AI):
         # for t in self.solved:
         #     print(t)
 
-        print("action")
+        # print("action")
         if number >= 0: # not a flag action
-            print("updated")
+            # print("updated")
             self.__board[x][y].uncover(number)             # "uncover"
             self.__board[x][y].status = number             # set the status to mark as an uncovered tile
             self.add_knowledge(self.__board[x][y], number) # add the new information to the knowledge base
@@ -178,11 +178,11 @@ class MyAI(AI):
             if (not self.__board[x][y] in self.solved) and (not self.__board[x][y] in self.frontier):
                 # not a solved tile (all surroundings known) and not in frontier;
                 # add to frontier as a tile of interest
-                print("add to frontier")
+                # print("add to frontier")
                 self.frontier.append(self.__board[x][y])
 
         else:
-            print("flag")
+            # print("flag")
             self.__board[x][y].flag()          # mark as flagged
             self.mark_mine(self.__board[x][y]) # mark as mine in kb
 
@@ -258,8 +258,8 @@ class MyAI(AI):
 
     def add_knowledge(self, tile, count):
         # only called if a tile is uncovered/safe
-        print("################ ADD KNOWLEDGE")
-        print("ADD KNOWLEDGE IS CURRENTLY WORKING WITH TILE", tile)
+        # print("################ ADD KNOWLEDGE")
+        # print("ADD KNOWLEDGE IS CURRENTLY WORKING WITH TILE", tile)
         
         # updating status information
         # self.moves_made.add(tile) # add to moves made
@@ -288,32 +288,32 @@ class MyAI(AI):
         #########################
         # PRINT
         #########################
-        print("KNOWLEDGE BASE:")
-        for stmt in self.knowledge_base:
-            stmt.printSet()
-        print("KNOWLEDGE BASE")
+        # print("KNOWLEDGE BASE:")
+        # for stmt in self.knowledge_base:
+        #     stmt.printSet()
+        # print("KNOWLEDGE BASE")
 
-        print("adding:")
-        sentence.printSet()
+        # print("adding:")
+        # sentence.printSet()
 
-        print("Tile:", tile)
+        # print("Tile:", tile)
 
-        # print("SOLVED LIST:")
-        # for t in self.solved:
-        #     print(t)
-        # print("END OF SOLVED LIST")
+        # # print("SOLVED LIST:")
+        # # for t in self.solved:
+        # #     print(t)
+        # # print("END OF SOLVED LIST")
         
-        print("THE NEW SENTENCE IS SOLVEABLE?", self.isSolveable(sentence))
-        print("THE TILE IS IN SOLVED LIST?", tile in self.solved)
+        # print("THE NEW SENTENCE IS SOLVEABLE?", self.isSolveable(sentence))
+        # print("THE TILE IS IN SOLVED LIST?", tile in self.solved)
         ##########################
 
         # check if the sentence is solveable
         if len(sentence.tiles) == 0:
-            print("The tile neighborhood was conmpletely filled with safe/mine tiles")
+            # print("The tile neighborhood was conmpletely filled with safe/mine tiles")
             self.knowledge_base.remove(sentence)
-            print("Removed the empty sentence from the kb")
+            # print("Removed the empty sentence from the kb")
         elif self.isSolveable(sentence) and tile not in self.solved:
-            print("solveable")
+            # print("solveable")
             self.knowledge_base.remove(sentence) # remove from knowledge base (provides no additional information)
 
             # if the tile is solveable (surroundings known) and the tile is not solved: 
@@ -321,9 +321,9 @@ class MyAI(AI):
                 ti = list(sentence.tiles)            # get the tiles
                 for t in ti:
                     self.mark_safe(t)                # mark all tiles in the list as safe
-                    print("Adding to moves (add to kb safe tiles)")
+                    # print("Adding to moves (add to kb safe tiles)")
                 if tile not in self.solved:
-                    print("Adding", tile, "to solved")
+                    # print("Adding", tile, "to solved")
                     self.solved.append(tile)         # add the tile as a known solved tile (all neighbors are safe)
                 if tile in self.frontier:
                     self.frontier.remove(tile)
@@ -332,44 +332,44 @@ class MyAI(AI):
                 ti = list(sentence.tiles)
                 for t in ti:
                     self.mark_mine(t)                # mark all tiles as mines
-                    print("Adding to moves (add to kb mine tiles)")
+                    # print("Adding to moves (add to kb mine tiles)")
                 if tile not in self.solved:
-                    print("Adding", tile, "to solved")
+                    # print("Adding", tile, "to solved")
                     self.solved.append(tile)         # add the tile as a known solved tile (all neighbors are mines)
                 if tile in self.frontier:
                     self.frontier.remove(tile)
 
-        print("solving statements")
+        # print("solving statements")
         self.solve_statements()
 
     def make_safe_move(self):
-        print("moves:")
-        for move in self.moves:
-            if move.getMove() == AI.Action.UNCOVER:
-                print("{} at {}, {}".format("UNCOVER", move.getX(), move.getY()))
-            elif move.getMove() == AI.Action.FLAG:
-                print("{} at {}, {}".format("FLAG", move.getX(), move.getY()))
-            elif move.getMove() == AI.Action.LEAVE:
-                print("{} at {}, {}".format("LEAVE", move.getX(), move.getY()))
-        print("find a move")
+        # print("moves:")
+        # for move in self.moves:
+        #     if move.getMove() == AI.Action.UNCOVER:
+        #         print("{} at {}, {}".format("UNCOVER", move.getX(), move.getY()))
+        #     elif move.getMove() == AI.Action.FLAG:
+        #         print("{} at {}, {}".format("FLAG", move.getX(), move.getY()))
+        #     elif move.getMove() == AI.Action.LEAVE:
+        #         print("{} at {}, {}".format("LEAVE", move.getX(), move.getY()))
+        # print("find a move")
         
         if not self.moves: # if move list empty make inferences
-            print("solving statements")
+            # print("solving statements")
             self.solve_statements()
 
         if not self.moves: # if move list empty search frontier
             self.find_move()
 
         if not self.moves: # if move list empty make a random guess
-            print("make a guess")
+            # print("make a guess")
             self.make_guess()
 
         # get a move
-        print("MOVES HAS LEN", len(self.moves))
+        # print("MOVES HAS LEN", len(self.moves))
         next_move = self.moves.pop(0)
-        print("get a move")
+        # print("get a move")
         self.__prev_move = next_move
-        print("returning")
+        # print("returning")
 		#print("visit",next_move.getX(),next_move.getY(),next_move.getMove())
         return next_move
 
@@ -382,21 +382,21 @@ class MyAI(AI):
 
     def isSolveable(self, stmt) -> bool:
         if len(stmt.tiles) == 0: # must be at least 1 element in list
-            print("No tiles in the list")
+            # print("No tiles in the list")
             return False
         # there are no mines in the tile list or
         # all tiles are mines
         if stmt.count == 0:
-            print("NO MINES")
+            # print("NO MINES")
             return True
         elif len(stmt.tiles) == stmt.count:
-            print("all mines!!!!")
+            # print("all mines!!!!")
             return True
-        print("NOT SOLVEABLE")
+        # print("NOT SOLVEABLE")
         return False
 
     def solve_statements(self):
-        print("solving statements start")
+        # print("solving statements start")
 
         for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
             # periodically remove the safe tiles
@@ -410,7 +410,7 @@ class MyAI(AI):
         infer_list = []
         gen_new = True
         while gen_new:
-            print("inloop")
+            # print("inloop")
             gen_new = False
             new_stmts = []
             for right in self.knowledge_base:
@@ -421,7 +421,7 @@ class MyAI(AI):
                     #left.printSet()
                     #right.printSet()
                     if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement (and valid)
-                        print("NEWLY GEN STATEMENT:")
+                        # print("NEWLY GEN STATEMENT:")
                         new_s.printSet()
                         # print("generated new statement that isnt in the knowledge base")
                         if self.isSolveable(new_s):
@@ -433,16 +433,16 @@ class MyAI(AI):
                             # print("not solveable")
                             if (new_s not in self.knowledge_base) and (new_s not in new_stmts):
                                 # print("not in knowledge base, or in new statements")
-                                print("GENERATED:")
-                                new_s.printSet()
+                                # print("GENERATED:")
+                                # new_s.printSet()
 
-                                for tile in new_s.tiles:
-                                    if tile in self.safes:
-                                        s.mark_safe(tile)
-                                    if tile in self.mines:
-                                        s.mark_mine(tile)
-                                if len(new_s.tiles) != 0:
-                                    new_stmts.append(new_s)
+                                # for tile in new_s.tiles:
+                                #     if tile in self.safes:
+                                #         s.mark_safe(tile)
+                                #     if tile in self.mines:
+                                #         s.mark_mine(tile)
+                                # if len(new_s.tiles) != 0:
+                                #     new_stmts.append(new_s)
 
                                 # print("gen new")
                                 gen_new = True
@@ -451,8 +451,8 @@ class MyAI(AI):
                     #left.printSet()
                     #right.printSet()
                     if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement (and valid)
-                        print("NEWLY GEN STATEMENT:")
-                        new_s.printSet()
+                        # print("NEWLY GEN STATEMENT:")
+                        # new_s.printSet()
                         # print("generated new statement that isnt in the knowledge base")
                         if self.isSolveable(new_s):
                             # print("new_s is solveable")
@@ -463,8 +463,8 @@ class MyAI(AI):
                             # print("not solveable")
                             if (new_s not in self.knowledge_base) and (new_s not in new_stmts):
                                 # print("not in knowledge base, or in new statements")
-                                print("GENERATED:")
-                                new_s.printSet()
+                                # print("GENERATED:")
+                                # new_s.printSet()
 
                                 for tile in new_s.tiles:
                                     if tile in self.safes:
@@ -476,19 +476,19 @@ class MyAI(AI):
 
                                 # print("gen new")
                                 gen_new = True
-            print("extend")
+            # print("extend")
             self.knowledge_base.extend(new_stmts)
-        print("while loop end")
+        # print("while loop end")
 
         for s in infer_list:
             if s.count == 0:
                 for tile in s.tiles:
                     self.mark_safe(tile)
-                    print("Adding to moves (inferred new statements = safe)")
+                    # print("Adding to moves (inferred new statements = safe)")
             elif len(s.tiles)==s.count:
                 for tile in s.tiles:
                     self.mark_mine(tile)
-                    print("Adding to moves (inferred new statements = mines)")
+                    # print("Adding to moves (inferred new statements = mines)")
         
         new_frontier = []
         for t in self.frontier:
@@ -516,11 +516,11 @@ class MyAI(AI):
 
     def make_guess(self) -> None:
         """Choose a random tile to uncover and append it to the moves list"""
-        print("make a random move")
+        # print("make a random move")
 
         # get a sentence from the knowledge base and choose one of the tiles to uncover
         if len(self.knowledge_base) > 0:
-            print("knowledge base is", len(self.knowledge_base))
+            # print("knowledge base is", len(self.knowledge_base))
             moveset = sorted(self.knowledge_base, key=lambda x: len(x.tiles), reverse=True)
             moveset = sorted(moveset, key=lambda x: x.count)
 
@@ -531,7 +531,7 @@ class MyAI(AI):
                 return
 
         ##############################################################################
-        print("frontier is", len(self.frontier))
+        # print("frontier is", len(self.frontier))
         small_mine_cnt = sorted(self.frontier, key=lambda x: x.label)
         many_unknowns = sorted(small_mine_cnt, key=lambda x: (x.label - len(self.get_tile_mines(x)) / len(self.get_tile_neighbors(x))))
         if len(many_unknowns) > 0:
@@ -543,18 +543,18 @@ class MyAI(AI):
 
         ##############################################################################
         # make a random guess out of all possible covered tiles
-        print("In make guess")
+        # print("In make guess")
         unsolved = [] # list of unknowns
-        print(self.__rows, self.__cols)
+        # print(self.__rows, self.__cols)
         for x in range(0, self.__rows):
             for y in range(0, self.__cols):
                 if self.__board[x][y].status == -1 or (self.__board[x][y].status >=0 and self.__board[x][y] not in self.moves_made):
-                    print("found an unknown")
+                    # print("found an unknown")
                     unsolved.append((x, y))
-        print("got the unknowns (make guess)")
+        # print("got the unknowns (make guess)")
         if len(unsolved) > 0:
             (x,y) = random.choice(unsolved)
-            print("Adding to moves (made a guess):", x, y)
+            # print("Adding to moves (made a guess):", x, y)
             self.addMove(self.__board[x][y], Action(AI.Action.UNCOVER, x, y))
             return
         
@@ -564,10 +564,10 @@ class MyAI(AI):
         return
 
     def solve_tile(self, t) -> None:
-        print("Solving tile", t)
+        # print("Solving tile", t)
 
         if t.status > -1: # only solve uncovered tiles
-            print("TIle is uncovered")
+            # print("TIle is uncovered")
             # check how many blocks around are solved or are mines.
             flagged = self.get_tile_mines(t)
             unknown = self.get_tile_unknown(t)
@@ -579,7 +579,7 @@ class MyAI(AI):
 
             if t.label == len(flagged):
                 if t not in self.solved:
-                    print("Adding", t, "to solved")
+                    # print("Adding", t, "to solved")
                     self.solved.append(t) # add the tile as a known solved tile
                 
                 self.frontier.remove(t)
@@ -588,7 +588,7 @@ class MyAI(AI):
 
             if t.label == len(unknown):
                 if t not in self.solved:
-                    print("Adding", t, "to solved")
+                    # print("Adding", t, "to solved")
                     self.solved.append(t) # add the tile as a known solved tile
                 
                 self.frontier.remove(t)
@@ -603,7 +603,7 @@ class MyAI(AI):
         #     print(t)
         # print("END OF MOVES MADE")
         if tile not in self.moves_made:
-            print("A move has not yet been made on tile", tile)
+            # print("A move has not yet been made on tile", tile)
             if action not in self.moves:
                 self.moves_made.add(tile)
                 self.moves.append(action)
