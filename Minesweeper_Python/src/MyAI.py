@@ -396,7 +396,7 @@ class MyAI(AI):
         return False
 
     def solve_statements(self):
-        print("solving statements start")
+        # print("solving statements start")
 
         for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
             # periodically remove the safe tiles
@@ -410,19 +410,19 @@ class MyAI(AI):
         infer_list = []
         gen_new = True
         while gen_new:
-            print("inloop")
+            # print("inloop")
             gen_new = False
             new_stmts = []
             for right in self.knowledge_base:
                 if sentence != right:
-                    print("not the same")
+                    # print("not the same")
                     new_s = self.minus(sentence, right)
                     # print("get new")
                     #left.printSet()
                     #right.printSet()
                     if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement (and valid)
-                        print("NEWLY GEN STATEMENT:")
-                        new_s.printSet()
+                        # print("NEWLY GEN STATEMENT1:")
+                        # new_s.printSet()
                         # print("generated new statement that isnt in the knowledge base")
                         if self.isSolveable(new_s):
                             # print("new_s is solveable")
@@ -436,13 +436,13 @@ class MyAI(AI):
                                 # print("GENERATED:")
                                 # new_s.printSet()
 
-                                # for tile in new_s.tiles:
-                                #     if tile in self.safes:
-                                #         s.mark_safe(tile)
-                                #     if tile in self.mines:
-                                #         s.mark_mine(tile)
-                                # if len(new_s.tiles) != 0:
-                                #     new_stmts.append(new_s)
+                                for tile in new_s.tiles:
+                                    if tile in self.safes:
+                                        s.mark_safe(tile)
+                                    if tile in self.mines:
+                                        s.mark_mine(tile)
+                                if len(new_s.tiles) != 0:
+                                    new_stmts.append(new_s)
 
                                 # print("gen new")
                                 gen_new = True
@@ -451,7 +451,7 @@ class MyAI(AI):
                     #left.printSet()
                     #right.printSet()
                     if new_s != None and len(new_s.tiles) > 0 and new_s not in self.knowledge_base:	# gen a new & diff statement (and valid)
-                        # print("NEWLY GEN STATEMENT:")
+                        # print("NEWLY GEN STATEMENT2:")
                         # new_s.printSet()
                         # print("generated new statement that isnt in the knowledge base")
                         if self.isSolveable(new_s):
@@ -478,7 +478,7 @@ class MyAI(AI):
                                 gen_new = True
             # print("extend")
             self.knowledge_base.extend(new_stmts)
-        print("while loop end")
+        # print("while loop end")
 
         for s in infer_list:
             if s.count == 0:
@@ -516,7 +516,7 @@ class MyAI(AI):
 
     def make_guess(self) -> None:
         """Choose a random tile to uncover and append it to the moves list"""
-        print("make a random move")
+        # print("make a random move")
 
         # get a sentence from the knowledge base and choose one of the tiles to uncover
         if len(self.knowledge_base) > 0:
