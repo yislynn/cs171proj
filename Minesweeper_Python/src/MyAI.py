@@ -113,15 +113,15 @@ class Tile():
 
 class MyAI(AI):
     def __init__(self, rowDimension, colDimension, totalMines, startX, startY):
-        self.__rows = rowDimension
-        self.__cols = colDimension
+        self.__rows = colDimension
+        self.__cols = rowDimension
         self.__totalMines = totalMines
-        self.__currX = startX
-        self.__currY = startY
+        self.__currX = startY
+        self.__currY = startX
         self.__numCovered = (self.__rows * self.__cols) - self.__totalMines
         # create a board of tiles; each will contain tile state information
         
-        self.__board = [[Tile(r, c, rowDimension, colDimension) for c in range(colDimension)] for r in range(rowDimension)]
+        self.__board = [[Tile(r, c,self.__rows, self.__cols) for c in range(self.__cols)] for r in range(self.__rows)]
 
         ####
         self.__prev_move = Action(AI.Action.UNCOVER, startX, startY)
