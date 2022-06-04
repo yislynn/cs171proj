@@ -10,7 +10,7 @@
 # NOTES: 		- MyAI inherits from the abstract AI class in AI.py.
 # ==============================CS-199==================================
 import random
-
+import time
 from AI import AI
 from Action import Action
 
@@ -397,7 +397,7 @@ class MyAI(AI):
 
     def solve_statements(self):
         # print("solving statements start")
-
+        start = time.time()
         for safe in self.safes: # (not at the beginning so that it doesnt result in empty tile lists)
             # periodically remove the safe tiles
             self.mark_safe(safe)
@@ -411,6 +411,9 @@ class MyAI(AI):
         gen_new = True
         while gen_new:
             # print("inloop")
+            if time.time() - start > .625: # timebound per move; .625*16*30 = 5 min
+                print("timeout--leaving solve statements")
+                break
             gen_new = False
             new_stmts = []
             for right in self.knowledge_base:
